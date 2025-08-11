@@ -1,3 +1,4 @@
+/* [기존 다크 변수 그대로 둠] */
 :root{
   --bg:#0b0f17;
   --panel:#121826;
@@ -11,6 +12,19 @@
   --radius:14px;
 }
 
+/* 🔆 라이트 테마 변수: html[data-theme="light"]에서 덮어쓰기 */
+html[data-theme="light"]{
+  --bg:#f8fafc;
+  --panel:#ffffff;
+  --muted:#f1f5f9;
+  --fg:#0f172a;
+  --sub:#475569;
+  --link:#1d4ed8;
+  --border:#e2e8f0;
+  --accent1:#e8eefb;
+  --accent2:#e2ecff;
+}
+
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font:16px/1.6 ui-sans-serif,system-ui,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR}
 a{color:var(--link);text-decoration:none}
@@ -19,8 +33,18 @@ a:hover{text-decoration:underline}
 .container{max-width:1100px;margin:0 auto;padding:24px 20px}
 
 /* NAV */
-.nav{position:sticky;top:0;z-index:10;display:flex;gap:18px;align-items:center;padding:12px 20px;background:rgba(10,14,22,.7);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--border)}
-.nav .brand{font-weight:800;letter-spacing:.3px}
+.nav{position:sticky;top:0;z-index:10;display:flex;gap:18px;align-items:center;justify-content:flex-start;flex-wrap:wrap;
+     padding:12px 20px;background:rgba(10,14,22,.7);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--border)}
+html[data-theme="light"] .nav{background:rgba(241,245,249,.7)} /* 라이트일 때 투명 배경색 보정 */
+.nav .brand{font-weight:800;letter-spacing:.3px;margin-right:6px}
+
+/* 토글 버튼 */
+.toggle{
+  margin-left:auto; /* 우측 정렬 */
+  padding:8px 12px;border-radius:10px;border:1px solid var(--border);
+  background:var(--panel);color:var(--fg);cursor:pointer
+}
+.toggle:hover{filter:brightness(1.05)}
 
 /* HERO */
 .hero{background:linear-gradient(135deg,var(--accent1),var(--accent2));border:1px solid var(--border);border-radius:var(--radius);padding:44px 28px;margin:20px 0}
@@ -40,6 +64,7 @@ a:hover{text-decoration:underline}
 
 /* TAGS */
 .tag{display:inline-block;margin:0 8px 8px 0;padding:4px 10px;background:#172033;border:1px solid var(--border);border-radius:999px;font-size:12px;color:#bdd1ff}
+html[data-theme="light"] .tag{background:#e2e8f0;color:#1e293b}
 
 /* CATEGORY CHIPS */
 .cat{display:inline-block;margin:0 10px 10px 0;padding:8px 12px;background:var(--panel);border:1px solid var(--border);border-radius:10px;color:var(--fg)}
