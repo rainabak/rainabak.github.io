@@ -7,31 +7,31 @@
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
 </head>
 <body>
-  {% include nav.html %}
+
+  {% include nav.html %}   <!-- 여기 안에 버튼 HTML 있음 -->
+  
   <main class="container">
     {{ content }}
   </main>
+  
   <footer class="footer">
     © {{ site.title }} · {{ site.time | date: '%Y' }}
   </footer>
 
-  <!-- 🔀 Theme toggle script -->
+  <!-- ✅ 버튼 HTML보다 나중에 토글 스크립트 실행 -->
   <script>
     (function(){
       const KEY = 'fe-notes:theme';
       const root = document.documentElement;
       const btn = document.getElementById('theme-toggle');
 
-      function label(t){
-        return t === 'light' ? '🌞 라이트' : '🌙 다크';
-      }
+      function label(t){ return t === 'light' ? '🌞 라이트' : '🌙 다크'; }
       function setTheme(t){
         root.setAttribute('data-theme', t);
         try { localStorage.setItem(KEY, t); } catch(e){}
         if(btn){ btn.textContent = label(t); }
       }
 
-      // 초기 테마 결정: 저장 → OS 선호 → 기본 다크
       let init = 'dark';
       try {
         init = localStorage.getItem(KEY) ||
@@ -48,5 +48,6 @@
       }
     })();
   </script>
+
 </body>
 </html>
