@@ -1,71 +1,132 @@
 <!doctype html>
 <html lang="ko">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Summary | My GitHub Pages</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+    :root{
+      --bg:#0b0f17; --panel:#121826; --fg:#e5e7eb; --sub:#9aa4b2;
+      --link:#8ab4ff; --border:#1f2937; --radius:12px;
+      --tableRow:#0f1422; --tableHead:#0d1320;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--fg);
+      font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR"}
+
+    /* NAV */
+    nav{
+      position:sticky;top:0;z-index:10;
+      display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+      background:rgba(18,24,38,.85);backdrop-filter:saturate(140%) blur(6px);
+      border-bottom:1px solid var(--border);padding:12px 20px;
+    }
+    nav a, nav .current{
+      text-decoration:none;padding:8px 10px;border-radius:8px;
+    }
+    nav a{color:var(--fg);border:1px solid transparent}
+    nav a:hover{border-color:var(--border);background:var(--panel)}
+    nav .current{
+      color:#7ea6ff;background:#172033;border:1px solid var(--border);
+      pointer-events:none;cursor:default;font-weight:700
     }
 
-    nav {
-      background-color: #f0f0f0;
-      padding: 10px;
-      margin-bottom: 20px;
-    }
+    /* CONTENT (풀폭) */
+    .content{padding:20px}
+    .card{background:var(--panel);border:1px solid var(--border);
+      border-radius:var(--radius);padding:20px;margin-bottom:20px}
+    a{color:var(--link)}
 
-    nav a {
-      margin-right: 15px;
-      text-decoration: none;
-      color: #0073e6;
+    /* TABLE */
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:separate;border-spacing:0;
+      border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    thead th{
+      background:var(--tableHead);color:var(--fg);text-align:left;
+      padding:12px;border-bottom:1px solid var(--border);font-weight:700
     }
+    tbody td{
+      padding:12px;border-bottom:1px solid var(--border);color:var(--fg)
+    }
+    tbody tr:nth-child(odd){background:var(--tableRow)}
+    tbody tr:hover{background:#162139}
+    th,td:first-child{padding-left:16px}
+    th,td:last-child{padding-right:16px}
 
-    nav a:hover {
-      text-decoration: underline;
+    /* SMALL SCREEN */
+    @media (max-width:640px){
+      nav{gap:8px}
+      .card{padding:16px}
+      thead{display:none}
+      table, tbody, tr, td{display:block;width:100%}
+      tbody tr{border-bottom:1px solid var(--border);margin-bottom:10px}
+      td{border:none;position:relative;padding:10px 12px}
+      td::before{
+        content:attr(data-label);
+        display:block;font-size:12px;color:var(--sub);margin-bottom:4px
+      }
     }
   </style>
 </head>
-
 <body>
 
-  <!-- 메뉴 영역 -->
-  <nav>
+  <!-- 메뉴 영역 (모든 페이지 동일) -->
+  <nav id="site-nav">
     <a href="/">Home</a>
-    <a href="/about.html">About</a>
+    <a href="/summary.html">Summary</a>
     <a href="/Linear.html">Linear</a>
     <a href="/Norm.html">Norm</a>
     <a href="/Sel-Attention.html">Self Attention</a>
+    <a href="/about.html">About</a>
   </nav>
 
-  <h1>Summary 페이지</h1>
-  <p> 수업 내용을 정리한 페이지 입니다.</p>
-  
-  <table border="1">
-  <thead>
-    <tr>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>스칼라</td>
-      <td>소문자 평문</td>
-      <td> x=1.5 </td>
-    </tr>
-    <tr>
-      <td>벡터</td>
-      <td>소문자 볼트</td>
-      <td></td>
-    </tr>
-  </tbody>
-</table>
+  <!-- 메인 내용 (풀폭) -->
+  <div class="content">
+    <div class="card">
+      <h1>Summary 페이지</h1>
+      <p>수업 내용을 정리한 페이지입니다.</p>
+    </div>
 
+    <div class="card table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>개념</th>
+            <th>표기</th>
+            <th>예시</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="개념">스칼라</td>
+            <td data-label="표기">소문자 평문</td>
+            <td data-label="예시"><code>x = 1.5</code></td>
+          </tr>
+          <tr>
+            <td data-label="개념">벡터</td>
+            <td data-label="표기">소문자 볼드</td>
+            <td data-label="예시"><code>v = [1, 2, 3]</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
+  <!-- 현재 페이지 메뉴 자동 비활성화 -->
+  <script>
+    (function(){
+      const path = location.pathname.replace(/index\.html$/,'') || '/';
+      document.querySelectorAll('#site-nav a').forEach(a=>{
+        const apath = new URL(a.getAttribute('href'), location.origin).pathname;
+        const normA = apath.replace(/index\.html$/,'') || '/';
+        if (normA === path) {
+          const span = document.createElement('span');
+          span.className = 'current';
+          span.textContent = a.textContent;
+          a.replaceWith(span);
+        }
+      });
+    })();
+  </script>
 </body>
-
 </html>
