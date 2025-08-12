@@ -4,41 +4,101 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Layer Normalization (Norm) 정리</title>
+
+  <!-- 폰트 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
   <style>
-    :root{--bg:#0b1020;--card:#12172a;--muted:#8ea0c0;--text:#e8eefc;--accent:#5ab0ff;--border:#1b2440}
+    :root{
+      --bg:#0b1020; --card:#12172a; --muted:#8ea0c0; --text:#e8eefc;
+      --accent:#5ab0ff; --border:#1b2440; --row:#0d1428; --head:#0c1326;
+      --radius:16px;
+    }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Apple SD Gothic Neo,Arial,sans-serif;line-height:1.65}
-    .container{max-width:980px;margin:0 auto;padding:40px 20px}
+    body{
+      margin:0;background:var(--bg);color:var(--text);
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Apple SD Gothic Neo,Arial,sans-serif;
+      line-height:1.65
+    }
+
+    /* NAV (상단 고정 + 현재 페이지 비활성) */
+    nav{
+      position:sticky;top:0;z-index:10;
+      display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+      background:rgba(11,16,32,.85);backdrop-filter:saturate(140%) blur(8px);
+      border-bottom:1px solid var(--border);padding:12px 20px
+    }
+    nav a, nav .current{
+      text-decoration:none;padding:8px 12px;border-radius:10px
+    }
+    nav a{color:var(--text);border:1px solid transparent}
+    nav a:hover{border-color:var(--border);background:#0f1832}
+    nav .current{
+      color:#9ec7ff;background:#162244;border:1px solid var(--border);
+      pointer-events:none;cursor:default;font-weight:700
+    }
+
+    /* 레이아웃: 풀폭 */
+    .container{padding:40px 20px}
+    .badge{font-size:12px;color:#c9d7ff;background:#1a2140;border:1px solid var(--border);
+      padding:4px 8px;border-radius:999px}
     header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:24px}
-    .badge{font-size:12px;color:#c9d7ff;background:#1a2140;border:1px solid var(--border);padding:4px 8px;border-radius:999px}
     h1{font-size:34px;letter-spacing:-0.02em;margin:0}
     h2{font-size:22px;margin:28px 0 12px}
     h3{font-size:18px;margin:18px 0 8px;color:#cfe2ff}
     p,li{color:#dbe6ff}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin:16px 0;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+
+    .card{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:var(--radius);padding:20px;margin:16px 0;
+      box-shadow:0 10px 30px rgba(0,0,0,.25)
+    }
+    .grid{display:grid;gap:16px}
+    @media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+
+    .kicker{color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:12px}
+    .pill{display:inline-block;padding:4px 8px;border:1px solid var(--border);
+      border-radius:999px;background:#0e1731;color:#cfe2ff;font-size:12px}
+
     code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
     pre{background:#0c1328;border:1px solid var(--border);border-radius:12px;padding:16px;overflow:auto}
     pre code{color:#e6f0ff}
-    .grid{display:grid;gap:16px}
-    @media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
-    .kicker{color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:12px}
-    .pill{display:inline-block;padding:4px 8px;border:1px solid var(--border);border-radius:999px;background:#0e1731;color:#cfe2ff;font-size:12px}
-    .table{width:100%;border-collapse:separate;border-spacing:0}
+
+    /* 표 */
+    .table-wrap{overflow-x:auto}
+    table.table{
+      width:100%;border-collapse:separate;border-spacing:0;
+      border:1px solid var(--border);border-radius:12px;overflow:hidden
+    }
     .table th,.table td{padding:10px 12px;border-bottom:1px solid var(--border)}
-    .table th{color:#bcd3ff;text-align:left;font-weight:700}
+    .table th{background:var(--head);color:#bcd3ff;text-align:left;font-weight:700}
+    .table tbody tr:nth-child(odd){background:var(--row)}
+    .table tbody tr:hover{background:#142143}
+
     a{color:var(--accent);text-decoration:none}
     a:hover{text-decoration:underline}
+    .muted{color:var(--muted)}
   </style>
-  <script>
-    window.MathJax = {tex: {inlineMath: [['$','$'],['\\(','\\)']]}};
-  </script>
+
+  <!-- MathJax -->
+  <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]}};</script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
+
+  <!-- 공통 네비 -->
+  <nav id="site-nav">
+    <a href="/">Home</a>
+    <a href="/summary.html">Summary</a>
+    <a href="/Linear.html">Linear</a>
+    <a href="/Norm.html">Norm</a>
+    <a href="/Sel-Attention.html">Self Attention</a>
+    <a href="/about.html">About</a>
+  </nav>
+
   <div class="container">
     <header>
       <span class="badge">Normalization</span>
@@ -47,9 +107,9 @@
 
     <section class="card">
       <div class="kicker">개요</div>
-      <p><strong>Layer Normalization</strong>은 각 샘플(시퀀스의 한 토큰 벡터 등) 단위로 <em>특징 축(feature dimension)</em>에 대해 평균과 분산을 계산하여 정규화하는 방법입니다. 배치 크기에 의존하지 않아 RNN/Transformer처럼 시퀀스 길이와 배치가 변동되는 환경에서 안정적이며, <span class="pill">$
-      y = \gamma \odot \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta$
-      </span> 형태로 학습 가능한 스케일(\(\gamma\))과 시프트(\(\beta\))를 포함합니다.</p>
+      <p><strong>Layer Normalization</strong>은 각 샘플(시퀀스의 한 토큰 벡터 등) 단위로 <em>특징 축(feature dimension)</em>에 대해 평균과 분산을 계산하여 정규화하는 방법입니다. 배치 크기에 의존하지 않아 RNN/Transformer처럼 시퀀스 길이와 배치가 변동되는 환경에서 안정적이며,
+        <span class="pill">$y = \gamma \odot \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta$</span>
+        형태로 학습 가능한 스케일(\(\gamma\))과 시프트(\(\beta\))를 포함합니다.</p>
     </section>
 
     <section class="grid">
@@ -99,25 +159,27 @@ y = LayerNorm(y)</code></pre>
           <li><strong>epsilon</strong>: 너무 작으면 수치 불안정, 너무 크면 정규화 효과 약화</li>
           <li><strong>affine</strong>: \(\gamma,\beta\) 학습 여부(대부분 <span class="mono">True</span>)</li>
           <li><strong>normalized_shape</strong>: 보통 <span class="mono">d_model</span> 또는 마지막 축들의 튜플</li>
-          <li><strong>mixed precision</strong>: fp16에서 분산 계산 시 언더플로 주의 → 내부적으로 fp32로 승격하는 구현 사용 권장</li>
+          <li><strong>mixed precision</strong>: fp16에서 분산 계산 시 언더플로 주의 → 내부적으로 fp32로 승격하는 구현 권장</li>
         </ul>
       </div>
     </section>
 
     <section class="card">
       <h2>6) 다른 정규화와의 비교</h2>
-      <table class="table">
-        <thead>
-          <tr><th>기법</th><th>평균/분산 계산 축</th><th>배치 의존성</th><th>주사용 도메인</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>BatchNorm</td><td>배치+공간</td><td>의존함</td><td>CNN(비전)</td></tr>
-          <tr><td>LayerNorm</td><td>특징(feature) 축</td><td>의존 없음</td><td>NLP/시퀀스</td></tr>
-          <tr><td>InstanceNorm</td><td>공간(채널별)</td><td>의존 없음</td><td>스타일 변환 등</td></tr>
-          <tr><td>GroupNorm</td><td>채널 그룹</td><td>의존 없음</td><td>소배치 비전</td></tr>
-          <tr><td>RMSNorm</td><td>분산 대신 RMS</td><td>의존 없음</td><td>LLM 변형(가벼움)</td></tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr><th>기법</th><th>평균/분산 계산 축</th><th>배치 의존성</th><th>주사용 도메인</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>BatchNorm</td><td>배치+공간</td><td>의존함</td><td>CNN(비전)</td></tr>
+            <tr><td>LayerNorm</td><td>특징(feature) 축</td><td>의존 없음</td><td>NLP/시퀀스</td></tr>
+            <tr><td>InstanceNorm</td><td>공간(채널별)</td><td>의존 없음</td><td>스타일 변환 등</td></tr>
+            <tr><td>GroupNorm</td><td>채널 그룹</td><td>의존 없음</td><td>소배치 비전</td></tr>
+            <tr><td>RMSNorm</td><td>분산 대신 RMS</td><td>의존 없음</td><td>LLM 변형(가벼움)</td></tr>
+          </tbody>
+        </table>
+      </div>
       <p class="kicker">RMSNorm은 평균을 빼지 않고 L2 RMS로 스케일만 조정하는 변형으로, 계산이 단순하고 성능이 유사한 경우가 보고됩니다.</p>
     </section>
 
@@ -185,5 +247,22 @@ class PreLNBlock(nn.Module):
       <p class="muted">이 페이지는 교육용 요약입니다. 수식은 MathJax로 렌더링됩니다.</p>
     </section>
   </div>
+
+  <!-- 현재 페이지 메뉴 자동 비활성화 -->
+  <script>
+    (function(){
+      const path = location.pathname.replace(/index\.html$/,'') || '/';
+      document.querySelectorAll('#site-nav a').forEach(a=>{
+        const apath = new URL(a.getAttribute('href'), location.origin).pathname;
+        const normA = apath.replace(/index\.html$/,'') || '/';
+        if (normA === path) {
+          const span = document.createElement('span');
+          span.className = 'current';
+          span.textContent = a.textContent;
+          a.replaceWith(span);
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
