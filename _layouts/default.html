@@ -2,52 +2,14 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{{ page.title }} | {{ site.title }}</title>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
 </head>
 <body>
-
-  {% include nav.html %}   <!-- 여기 안에 버튼 HTML 있음 -->
-  
+  {% include nav.html %}
   <main class="container">
     {{ content }}
   </main>
-  
-  <footer class="footer">
-    © {{ site.title }} · {{ site.time | date: '%Y' }}
-  </footer>
-
-  <!-- ✅ 버튼 HTML보다 나중에 토글 스크립트 실행 -->
-  <script>
-    (function(){
-      const KEY = 'fe-notes:theme';
-      const root = document.documentElement;
-      const btn = document.getElementById('theme-toggle');
-
-      function label(t){ return t === 'light' ? '🌞 라이트' : '🌙 다크'; }
-      function setTheme(t){
-        root.setAttribute('data-theme', t);
-        try { localStorage.setItem(KEY, t); } catch(e){}
-        if(btn){ btn.textContent = label(t); }
-      }
-
-      let init = 'dark';
-      try {
-        init = localStorage.getItem(KEY) ||
-               (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-      } catch(e){}
-
-      setTheme(init);
-
-      if(btn){
-        btn.addEventListener('click', function(){
-          const next = (root.getAttribute('data-theme') === 'light') ? 'dark' : 'light';
-          setTheme(next);
-        });
-      }
-    })();
-  </script>
-
 </body>
 </html>
