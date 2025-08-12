@@ -2,72 +2,102 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Transformer에서의 Linear 정리</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+    :root{
+      --bg:#0b0f17; --panel:#121826; --fg:#e5e7eb; --sub:#9aa4b2;
+      --link:#8ab4ff; --border:#1f2937; --radius:12px;
     }
-    nav {
-      background-color: #f0f0f0;
-      padding: 10px;
-      margin-bottom: 20px;
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--fg);
+      font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR"}
+
+    /* NAV */
+    nav{
+      position:sticky;top:0;z-index:10;
+      display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+      background:rgba(18,24,38,.85);backdrop-filter:saturate(140%) blur(6px);
+      border-bottom:1px solid var(--border);padding:12px 20px;
     }
-    nav a {
-      margin-right: 15px;
-      text-decoration: none;
-      color: #0073e6;
+    nav a, nav .current{
+      text-decoration:none;padding:8px 10px;border-radius:8px;
     }
-    nav a:hover {
-      text-decoration: underline;
+    nav a{color:var(--fg);border:1px solid transparent}
+    nav a:hover{border-color:var(--border);background:var(--panel)}
+    nav .current{
+      color:#7ea6ff;background:#172033;border:1px solid var(--border);
+      pointer-events:none;cursor:default;font-weight:700
     }
+
+    /* CONTENT */
+    .content{padding:20px}
+    .card{background:var(--panel);border:1px solid var(--border);
+      border-radius:var(--radius);padding:20px;margin-bottom:20px}
+    a{color:var(--link)}
+    pre, code{
+      background:#0d1424;color:#dbe2ff;
+      border-radius:8px;padding:4px 8px;
+      font-family:Consolas, Monaco, monospace;
+    }
+    pre{padding:14px;overflow-x:auto}
   </style>
 </head>
 <body>
+
   <!-- 메뉴 영역 -->
-  <nav>
+  <nav id="site-nav">
+    <a href="/">Home</a>
     <a href="/about.html">About</a>
     <a href="/summary.html">Summary</a>
+    <a href="/Linear.html">Linear</a>
     <a href="/Norm.html">Norm</a>
     <a href="/Sel-Attention.html">Self Attention</a>
   </nav>
-  
-  <h1>Transformer에서의 Linear 이해</h1>
-  <section>
-    <h2>1. Linear의 의미</h2>
-    <p>"Attention Is All You Need" 논문에서 <strong>Linear</strong>는 수학적으로는 <em>선형변환</em>을, 구현에서는 <strong>Fully Connected Layer (Dense Layer)</strong>를 의미합니다. 입력 벡터에 학습 가능한 가중치 행렬과 편향을 곱해 다른 표현 공간으로 변환합니다.</p>
-  </section>
-  <section>
-    <h2>2. 사용 위치</h2>
-    <ul>
-      <li><strong>Q, K, V 생성</strong>: 입력 X를 각각 W_Q, W_K, W_V로 투영하여 Query, Key, Value를 생성</li>
-      <li><strong>Multi-Head Attention 출력 투영</strong>: 여러 헤드의 결과를 concat 후 W_O로 다시 투영</li>
-      <li><strong>Feed-Forward Network(FFN)</strong>: 두 개의 Linear와 비선형 활성화를 조합해 차원 확장/축소</li>
-    </ul>
-  </section>
-  <section>
-    <h2>3. 수식</h2>
-    <pre><code>Q = X W_Q
+
+  <!-- 메인 내용 -->
+  <div class="content">
+    <div class="card">
+      <h1>Transformer에서의 Linear 이해</h1>
+
+      <section>
+        <h2>1. Linear의 의미</h2>
+        <p>"Attention Is All You Need" 논문에서 <strong>Linear</strong>는 수학적으로는 <em>선형변환</em>을, 구현에서는 <strong>Fully Connected Layer (Dense Layer)</strong>를 의미합니다. 입력 벡터에 학습 가능한 가중치 행렬과 편향을 곱해 다른 표현 공간으로 변환합니다.</p>
+      </section>
+
+      <section>
+        <h2>2. 사용 위치</h2>
+        <ul>
+          <li><strong>Q, K, V 생성</strong>: 입력 X를 각각 W_Q, W_K, W_V로 투영하여 Query, Key, Value를 생성</li>
+          <li><strong>Multi-Head Attention 출력 투영</strong>: 여러 헤드의 결과를 concat 후 W_O로 다시 투영</li>
+          <li><strong>Feed-Forward Network(FFN)</strong>: 두 개의 Linear와 비선형 활성화를 조합해 차원 확장/축소</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>3. 수식</h2>
+        <pre><code>Q = X W_Q
 K = X W_K
 V = X W_V
 Attention(Q,K,V) = softmax(QK^T / sqrt(d_k)) V</code></pre>
-    <p>FFN 예시:</p>
-    <pre><code>FFN(x) = Linear2(ReLU(Linear1(x)))
+        <p>FFN 예시:</p>
+        <pre><code>FFN(x) = Linear2(ReLU(Linear1(x)))
 # Linear1: d_model -> d_ff
 # Linear2: d_ff -> d_model</code></pre>
-  </section>
-  <section>
-    <h2>4. 직관적 이해</h2>
-    <ul>
-      <li>좌표 변환: 입력 벡터를 어텐션에 유리한 표현 공간으로 이동</li>
-      <li>특징 혼합: 각 차원의 정보를 가중합으로 재조합</li>
-      <li>학습 가능한 투영: 유사도 계산과 합성에 적합한 공간 학습</li>
-    </ul>
-  </section>
-  <section>
-    <h2>5. PyTorch 예시</h2>
-    <pre><code>import torch.nn as nn
+      </section>
+
+      <section>
+        <h2>4. 직관적 이해</h2>
+        <ul>
+          <li>좌표 변환: 입력 벡터를 어텐션에 유리한 표현 공간으로 이동</li>
+          <li>특징 혼합: 각 차원의 정보를 가중합으로 재조합</li>
+          <li>학습 가능한 투영: 유사도 계산과 합성에 적합한 공간 학습</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>5. PyTorch 예시</h2>
+        <pre><code>import torch.nn as nn
 
 # Q/K/V 투영
 W_Q = nn.Linear(d_model, d_model)
@@ -80,21 +110,42 @@ ffn = nn.Sequential(
     nn.ReLU(),
     nn.Linear(d_ff, d_model)
 )</code></pre>
-  </section>
-  <section>
-    <h2>6. 주의사항</h2>
-    <ul>
-      <li>Linear 자체는 비선형성이 없으므로 Softmax, ReLU, Residual, LayerNorm과 함께 사용</li>
-      <li>Multi-Head Attention에서 각 헤드는 별도의 Linear 파라미터 사용</li>
-      <li>FFN에서는 차원 확장과 축소를 통해 표현력을 증가</li>
-    </ul>
-  </section>
-  <section>
-    <h2>7. 참고</h2>
-    <ul>
-      <li>Vaswani et al., Attention Is All You Need, 2017 (<a href="https://arxiv.org/abs/1706.03762" target="_blank">arXiv</a>)</li>
-      <li>PyTorch 문서: <a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html" target="_blank">nn.Linear</a></li>
-    </ul>
-  </section>
+      </section>
+
+      <section>
+        <h2>6. 주의사항</h2>
+        <ul>
+          <li>Linear 자체는 비선형성이 없으므로 Softmax, ReLU, Residual, LayerNorm과 함께 사용</li>
+          <li>Multi-Head Attention에서 각 헤드는 별도의 Linear 파라미터 사용</li>
+          <li>FFN에서는 차원 확장과 축소를 통해 표현력을 증가</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>7. 참고</h2>
+        <ul>
+          <li>Vaswani et al., Attention Is All You Need, 2017 (<a href="https://arxiv.org/abs/1706.03762" target="_blank">arXiv</a>)</li>
+          <li>PyTorch 문서: <a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html" target="_blank">nn.Linear</a></li>
+        </ul>
+      </section>
+    </div>
+  </div>
+
+  <!-- 현재 페이지 메뉴 자동 비활성화 -->
+  <script>
+    (function(){
+      const path = location.pathname.replace(/index\.html$/,'') || '/';
+      document.querySelectorAll('#site-nav a').forEach(a=>{
+        const apath = new URL(a.getAttribute('href'), location.origin).pathname;
+        const normA = apath.replace(/index\.html$/,'') || '/';
+        if (normA === path) {
+          const span = document.createElement('span');
+          span.className = 'current';
+          span.textContent = a.textContent;
+          a.replaceWith(span);
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
