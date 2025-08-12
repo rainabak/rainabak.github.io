@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Transformer에서의 Linear 정리</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+  <script>
+    // 폰트 대체용: Pretendard가 지원되지 않는 환경 대비
+    (function(){
+      const style = document.createElement('style');
+      style.innerHTML = `:root{--bg:#0b1020;--card:#12172a;--muted:#8ea0c0;--text:#e8eefc;--accent:#5ab0ff;--border:#1b2440}`;
+      document.head.appendChild(style);
+    })();
+  </script>
+  <style>
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Pretendard,system-ui,Segoe UI,Apple SD Gothic Neo,Apple Color Emoji,Arial,sans-serif;line-height:1.6}
+    .container{max-width:980px;margin:0 auto;padding:40px 20px}
+    header{display:flex;align-items:center;gap:14px;margin-bottom:28px}
+    .badge{font-size:12px;color:#c9d7ff;background:#1a2140;border:1px solid var(--border);padding:4px 8px;border-radius:999px}
+    h1{font-size:34px;letter-spacing:-0.02em;margin:0}
+    h2{font-size:22px;margin:32px 0 12px}
+    h3{font-size:18px;margin:22px 0 8px;color:#cfe2ff}
+    p,li{color:#dbe6ff}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin:16px 0;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    pre{background:#0c1328;border:1px solid var(--border);border-radius:12px;padding:16px;overflow:auto}
+    pre code{color:#e6f0ff}
+    .grid{display:grid;gap:16px}
+    @media(min-width:840px){.grid{grid-template-columns:1fr 1fr}}
+    .kicker{color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:12px}
+    .hl{color:var(--accent);font-weight:700}
+    .table{width:100%;border-collapse:separate;border-spacing:0}
+    .table th,.table td{padding:10px 12px;border-bottom:1px solid var(--border)}
+    .table th{color:#bcd3ff;text-align:left;font-weight:700}
+    .muted{color:var(--muted)}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .pill{display:inline-block;padding:6px 10px;border:1px solid var(--border);background:#0e1731;border-radius:999px;color:#cfe2ff;font-size:12px}
+  </style>
+  <!-- MathJax for equations -->
+  <script>
+    window.MathJax = {tex: {inlineMath: [['$','$'],['\\(','\\)']]}};
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge">Attention Is All You Need (2017)</span>
+      <h1>Transformer에서의 <span class="hl">Linear</span> 이해</h1>
+    </header>
+
+    <section class="card">
+      <div class="kicker">개요</div>
+      <p><strong>Linear</strong>는 수학적으로는 선형변환, 구현에서는 <em>Fully Connected (Dense) Layer</em>를 의미합니다. 입력 벡터에 학습 가능한 가중치 행렬(그리고 선택적 편향)을 곱해 <em>다른 표현 공간</em>으로 사상합니다.</p>
+      <pre><code>y = x W + b   (x: 1×d_in,  W: d_in×d_out,  b: 1×d_out)</code></pre>
+      <p>Transformer에서는 <span class="hl">Q/K/V 투영</span>, <span class="hl">멀티헤드 결과 결합(출력 투영)</span>, <span class="hl">피드포워드 네트워크(FFN)</span>에서 핵심적으로 사용됩니다.</p>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>1) 어디에 쓰이나?</h2>
+        <h3>Q/K/V 생성</h3>
+        <p>입력 $X$ 를 서로 다른 가중치로 투영: $Q = XW_Q,\; K = XW_K,\; V = XW_V$</p>
+        <h3>멀티헤드 출력 투영</h3>
+        <p>헤드별 결과를 concat 후 $W_O$로 다시 투영: $\text{Concat}(head_1,\dots,head_h)W_O$</p>
+        <h3>FFN (Position-wise)</h3>
+        <p>두 개의 Linear와 비선형 활성화로 구성: $\text{FFN}(x)=W_2\,\sigma(W_1x+b_1)+b_2$</p>
+      </div>
+      <div class="card">
+        <h2>2) 직관</h2>
+        <ul>
+          <li><strong>좌표 변환</strong>: 작업에 유리한 표현 공간으로 재배치</li>
+          <li><strong>특징 혼합</strong>: 차원간 가중합으로 새로운 특징 조합</li>
+          <li><strong>학습 가능한 투영</strong>: 어텐션 유사도/합성에 적합한 공간 학습</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>3) 수식 & 핵심 블록</h2>
+      <h3>Scaled Dot-Product Attention</h3>
+      <p>$\text{Attn}(Q,K,V)=\text{softmax}\!\big(\frac{QK^\top}{\sqrt{d_k}}\big)\,V$</p>
+      <p class="muted">※ 이때 <span class="pill">Q = XW_Q</span>, <span class="pill">K = XW_K</span>, <span class="pill">V = XW_V</span> 는 모두 Linear 투영 결과.</p>
+      <h3>Multi-Head Attention</h3>
+      <p>헤드 $i$ 마다 서로 다른 $W_Q^{(i)}, W_K^{(i)}, W_V^{(i)}$ 를 사용하고, concat 후 <span class="pill">$W_O$</span>로 Linear 투영.</p>
+      <h3>FFN (차원 확장/축소)</h3>
+      <ul>
+        <li>예시: $d_{model}=512$, $d_{ff}=2048$</li>
+        <li>첫 Linear: $512\to 2048$ (확장) → 활성화(예: ReLU/GELU)</li>
+        <li>둘째 Linear: $2048\to 512$ (복원)</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>4) 파라미터 형태(Shape)</h2>
+      <table class="table">
+        <thead>
+          <tr><th>용도</th><th>가중치 W 형태</th><th>비고</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Q 투영</td><td class="mono">(d_model, d_k)</td><td>헤드별로 상이</td></tr>
+          <tr><td>K 투영</td><td class="mono">(d_model, d_k)</td><td>헤드별로 상이</td></tr>
+          <tr><td>V 투영</td><td class="mono">(d_model, d_v)</td><td>헤드별로 상이</td></tr>
+          <tr><td>출력 투영 W<sub>O</sub></td><td class="mono">(h·d_v, d_model)</td><td>concat된 헤드 결합</td></tr>
+          <tr><td>FFN W<sub>1</sub></td><td class="mono">(d_model, d_ff)</td><td>차원 확장</td></tr>
+          <tr><td>FFN W<sub>2</sub></td><td class="mono">(d_ff, d_model)</td><td>차원 복원</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>5) PyTorch 예시</h2>
+      <pre><code class="language-python">import torch
+import torch.nn as nn
+
+B, T, D = 8, 128, 512   # batch, seq_len, d_model
+H = 8                    # num_heads
+Dk = D // H
+
+x = torch.randn(B, T, D)
+
+# Q/K/V 투영 (head별 분리 전)
+W_Q = nn.Linear(D, D, bias=False)
+W_K = nn.Linear(D, D, bias=False)
+W_V = nn.Linear(D, D, bias=False)
+Q, K, V = W_Q(x), W_K(x), W_V(x)
+
+# 멀티헤드로 reshape: (B, T, H, Dk)
+Q = Q.view(B, T, H, Dk)
+K = K.view(B, T, H, Dk)
+V = V.view(B, T, H, Dk)
+
+# 출력 투영
+W_O = nn.Linear(D, D, bias=False)
+out = W_O(torch.cat([V[:,:,i,:] for i in range(H)], dim=-1))
+
+# FFN
+ffn = nn.Sequential(
+    nn.Linear(D, 4*D),
+    nn.GELU(),
+    nn.Linear(4*D, D)
+)
+ffn_out = ffn(x)
+</code></pre>
+      <p class="muted">실제 구현에서는 배치 차원과 마스킹, 안정성(스케일링, 정규화) 등이 함께 고려됩니다.</p>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>6) 자주 하는 오해</h2>
+        <ul>
+          <li><strong>“Linear만으론 비선형을 학습 못한다”</strong> → 맞습니다. 그래서 <span class="pill">Softmax</span>, <span class="pill">활성화(ReLU/GELU)</span>, <span class="pill">Residual + LayerNorm</span>과 조합합니다.</li>
+          <li><strong>“어텐션은 비선형”</strong> → 핵심 스코어링은 선형곱이지만, <span class="pill">Softmax</span>가 비선형성을 부여합니다.</li>
+          <li><strong>“Linear는 단순 차원 변경”</strong> → 차원 변경 이상의 <em>표현 공간 학습</em>이 핵심입니다.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>7) 체크리스트</h2>
+        <ul>
+          <li>입출력 <span class="mono">shape</span> 일치 여부 (특히 헤드 수/차원)</li>
+          <li>마스킹/패딩 처리 및 <span class="mono">dtype</span> 안정성</li>
+          <li>초기화/정규화(Scale, LayerNorm)로 학습 안정화</li>
+          <li>FFN 배치/시퀀스 축 혼동 주의</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>8) 참고</h2>
+      <ul>
+        <li>Vaswani et al., <em>Attention Is All You Need</em>, 2017 (arXiv:1706.03762)</li>
+        <li>PyTorch Docs – <a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html" target="_blank" rel="noreferrer">nn.Linear</a></li>
+      </ul>
+      <p class="muted">이 페이지는 교육용 요약입니다. 수식은 MathJax로 렌더링됩니다.</p>
+    </section>
+  </div>
+</body>
+</html>
