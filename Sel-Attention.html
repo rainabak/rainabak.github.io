@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Self-Attention 정리</title>
+  <style>
+    :root {
+      --bg: #0b0e14;
+      --panel: #111622;
+      --text: #e6e6e6;
+      --muted: #9aa4b2;
+      --accent: #5cc8ff;
+      --accent-2: #a78bfa;
+      --ok: #34d399;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --border: #1f2937;
+      --code-bg: #0f1420;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f7fafc;
+        --panel: #ffffff;
+        --text: #0f172a;
+        --muted: #475569;
+        --accent: #0ea5e9;
+        --accent-2: #7c3aed;
+        --border: #e2e8f0;
+        --code-bg: #f8fafc;
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: var(--bg); color: var(--text); line-height: 1.6; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { display: grid; grid-template-columns: 260px 1fr; gap: 20px; padding: 24px; max-width: 1200px; margin: 0 auto; }
+    nav { position: sticky; top: 16px; align-self: start; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
+    nav h2 { margin: 0 0 12px; font-size: 14px; color: var(--muted); letter-spacing: .02em; }
+    nav a { display: block; padding: 8px 10px; border-radius: 10px; color: var(--text); }
+    nav a:hover { background: rgba(92,200,255,.1); }
+    header.hero { grid-column: 1 / -1; background: linear-gradient(135deg, rgba(92,200,255,.12), rgba(167,139,250,.12)); border: 1px solid var(--border); border-radius: 20px; padding: 28px; }
+    .title { display:flex; align-items: center; justify-content: space-between; gap: 12px; }
+    h1 { margin: 0; font-size: 28px; }
+    .subtitle { color: var(--muted); font-size: 14px; margin-top: 6px; }
+    .content { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 24px; }
+    section + section { margin-top: 32px; }
+    h2 { font-size: 20px; margin: 0 0 8px; }
+    h3 { font-size: 16px; margin: 16px 0 8px; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 13px; background: var(--code-bg); color: var(--text); padding: 2px 6px; border-radius: 6px; border: 1px solid var(--border); }
+    pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 13px; }
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 14px; padding: 14px; overflow: auto; }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; border: 1px solid var(--border); color: var(--muted); }
+    .callout { border-left: 3px solid var(--accent); background: linear-gradient(90deg, rgba(92,200,255,.12), transparent); padding: 12px 12px 12px 14px; border-radius: 12px; }
+    .muted { color: var(--muted); }
+    .row { display:flex; gap:12px; align-items:center; flex-wrap: wrap; }
+    .btn { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--border); background: var(--panel); padding: 8px 12px; border-radius: 999px; cursor:pointer; color: var(--text); }
+    .btn:hover { border-color: var(--accent); }
+    .table { width:100%; border-collapse: collapse; }
+    .table th, .table td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }
+    .table th { background: rgba(167,139,250,.12); }
+    .mono { font-variant-ligatures: none; }
+    footer { grid-column: 1 / -1; color: var(--muted); padding: 24px; text-align: center; }
+    .chip { display:inline-block; padding: 3px 8px; border:1px dashed var(--border); border-radius: 999px; font-size: 12px; color: var(--muted); }
+    .kbd-k { background: var(--bg); border:1px solid var(--border); }
+    .note { font-size: 13px; color: var(--muted); }
+    .flex { display:flex; gap:16px; flex-wrap: wrap; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <div class="title">
+        <div>
+          <h1>Self-Attention 정리</h1>
+          <div class="subtitle">Scaled Dot-Product / Multi-Head / Shape / 복잡도 / 간단 계산기</div>
+        </div>
+        <div class="row">
+          <button class="btn" id="toggle-theme" title="테마 토글"><span aria-hidden>🌓</span> 테마</button>
+          <a class="btn" href="#calculator">실습 계산기로 이동</a>
+        </div>
+      </div>
+    </header>
+
+    <nav aria-label="목차">
+      <h2>목차</h2>
+      <a href="#what">1. 무엇인가</a>
+      <a href="#sdpa">2. Scaled Dot-Product</a>
+      <a href="#shapes">3. 텐서 모양(Shape)</a>
+      <a href="#mha">4. Multi-Head</a>
+      <a href="#complexity">5. 시간·메모리 복잡도</a>
+      <a href="#masking">6. 마스킹</a>
+      <a href="#impl">7. 구현 요약</a>
+      <a href="#calculator">8. 미니 계산기</a>
+      <a href="#tips">9. 팁 & 디버깅</a>
+    </nav>
+
+    <main class="content">
+      <section id="what">
+        <h2>1) Self-Attention 이란?</h2>
+        <p>
+          시퀀스 내부 토큰들이 서로를 <b>질의(<span class="kbd">Q</span>)</b>, <b>키(<span class="kbd">K</span>)</b>, <b>값(<span class="kbd">V</span>)</b>으로 바라보며 관련도를 가중합으로 집계하는 메커니즘입니다.
+          토큰 간 상관관계를 <em>길이와 무관하게</em> 한 번에 계산할 수 있어 RNN의 의존성 한계를 완화합니다.
+        </p>
+        <div class="callout">
+          핵심 한 줄: <span class="kbd">Attention(Q, K, V) = softmax(QK^T / √d<sub>k</sub>) · V</span>
+        </div>
+      </section>
+
+      <section id="sdpa">
+        <h2>2) Scaled Dot-Product Attention</h2>
+        <ol>
+          <li><b>유사도</b> : 점곱 행렬 <span class="kbd">S = QK^T</span></li>
+          <li><b>스케일링</b> : <span class="kbd">S / √d<sub>k</sub></span> (내적 분산을 안정화)</li>
+          <li><b>마스킹</b> : 필요 시 <span class="kbd">-∞</span> 가산</li>
+          <li><b>정규화</b> : 행별 <span class="kbd">softmax</span></li>
+          <li><b>가중합</b> : <span class="kbd">A · V</span> → 출력</li>
+        </ol>
+        <div class="grid">
+          <div class="card" style="grid-column: span 12;">
+            <h3>작은 예시</h3>
+            <pre><code>Q = [[1, 0],
+     [0, 1]]
+K = [[1, 0],
+     [1, 1]]
+V = [[1, 2],
+     [3, 4]]
+
+S = QK^T = [[1, 1],
+            [0, 1]]
+A = softmax(S / √2) (행별)
+출력 = A · V</code></pre>
+            <p class="note">수치 실습은 아래 <a href="#calculator">미니 계산기</a>에서.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="shapes">
+        <h2>3) 텐서 Shape 정리</h2>
+        <table class="table mono">
+          <thead>
+            <tr><th>기호</th><th>설명</th><th>Shape</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>B</td><td>배치 크기</td><td>(B, ·)</td></tr>
+            <tr><td>T</td><td>시퀀스 길이</td><td>(·, T, ·)</td></tr>
+            <tr><td>d<sub>model</sub></td><td>임베딩 차원</td><td>(·, ·, d<sub>model</sub>)</td></tr>
+            <tr><td>h</td><td>헤드 수</td><td>—</td></tr>
+            <tr><td>d<sub>k</sub>=d<sub>v</sub>=d<sub>model</sub>/h</td><td>헤드당 차원</td><td>—</td></tr>
+            <tr><td>Q,K,V</td><td>프로젝션 결과</td><td>(B, h, T, d<sub>k</sub>)</td></tr>
+            <tr><td>Attn</td><td>가중치</td><td>(B, h, T, T)</td></tr>
+            <tr><td>출력</td><td>concat 후 proj</td><td>(B, T, d<sub>model</sub>)</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="mha">
+        <h2>4) Multi-Head Attention (MHA)</h2>
+        <p>
+          서로 다른 <b>투영 행렬</b>을 사용해 의미 공간을 분할 탐색합니다. 각 헤드는 다른 패턴(문법, 의미, 위치 등)에 특화될 수 있습니다.
+        </p>
+        <pre><code># 개념적 파이프라인
+X ──W<sub>Q</sub>→ Q ─┐       ┌─ softmax(QK^T/√d<sub>k</sub>)V ─┐
+X ──W<sub>K</sub>→ K ─├─ h개 ─┤                         ├─ concat ─ W<sub>O</sub> → Y
+X ──W<sub>V</sub>→ V ─┘       └───────────────────────────┘</code></pre>
+      </section>
+
+      <section id="complexity">
+        <h2>5) 복잡도</h2>
+        <ul>
+          <li><b>시간</b>: <span class="kbd">O(B · h · T² · d<sub>k</sub>)</span> (주로 <span class="kbd">QK^T</span>)</li>
+          <li><b>메모리</b>: <span class="kbd">O(B · h · T²)</span> (Attn 가중치 저장)</li>
+        </ul>
+        <div class="callout">
+          긴 시퀀스에서는 <span class="kbd">T²</span>가 병목입니다. 해결책: <b>근사/희소/선형</b> 어텐션(Performer, FlashAttention, Longformer 등) 채택.
+        </div>
+      </section>
+
+      <section id="masking">
+        <h2>6) 마스킹</h2>
+        <ul>
+          <li><b>패딩 마스크</b> : 비어있는 토큰을 가리기.</li>
+          <li><b>캐주얼(미래가림) 마스크</b> : 언어모델에서 <span class="kbd">i</span>가 <span class="kbd">j &gt; i</span>를 보지 못하게.</li>
+        </ul>
+        <pre><code>// 로짓 S에 마스크 적용 (가려진 곳은 매우 작은 값 더하기)
+S_masked = S + mask * (-1e9)
+A = softmax(S_masked)
+</code></pre>
+      </section>
+
+      <section id="impl">
+        <h2>7) 구현 요약 (PyTorch 유사 의사코드)</h2>
+        <pre><code># X: (B, T, d_model)
+Q = X @ W_Q  # (B, T, h*d_k) → reshape (B, h, T, d_k)
+K = X @ W_K  # (B, h, T, d_k)
+V = X @ W_V  # (B, h, T, d_v)
+S = Q @ K.transpose(-1, -2) / sqrt(d_k)      # (B, h, T, T)
+S += mask                                   # (선택)
+A = softmax(S, dim=-1)
+Y = A @ V                                    # (B, h, T, d_v)
+Y = concat_heads(Y) @ W_O                    # (B, T, d_model)
+</code></pre>
+        <div class="note">실제 구현은 배치/헤드 차원 순서를 바꿀 수 있으며, 성능 최적화를 위해 fused kernel(예: FlashAttention)을 사용하기도 합니다.</div>
+      </section>
+
+      <section id="calculator">
+        <h2>8) 미니 계산기 (Self-Attention: A = softmax(QK^T/√d<sub>k</sub>) · V)</h2>
+        <p class="note">작은 행렬로 실험하세요. 쉼표로 구분하고 줄바꿈으로 행을 구분합니다. 예: <span class="kbd">1,0\n0,1</span></p>
+        <div class="grid">
+          <div class="card" style="grid-column: span 6; min-width: 280px;">
+            <h3>입력</h3>
+            <label for="q" class="sr-only">Q</label>
+            <textarea id="q" rows="5" style="width:100%" class="mono" placeholder="Q (예)
+1,0
+0,1"></textarea>
+            <label for="k" class="sr-only">K</label>
+            <textarea id="k" rows="5" style="width:100%; margin-top:8px" class="mono" placeholder="K (예)
+1,0
+1,1"></textarea>
+            <label for="v" class="sr-only">V</label>
+            <textarea id="v" rows="5" style="width:100%; margin-top:8px" class="mono" placeholder="V (예)
+1,2
+3,4"></textarea>
+            <div class="row" style="margin-top:8px;">
+              <label>스케일 d<sub>k</sub> = <input id="dk" type="number" value="2" class="kbd kbd-k" style="width:70px"></label>
+              <button id="run" class="btn">계산</button>
+              <button id="fill-ex" class="btn" title="예시 채우기">예시 불러오기</button>
+              <button id="clear" class="btn" title="초기화">초기화</button>
+            </div>
+          </div>
+          <div class="card" style="grid-column: span 6; min-width: 280px;">
+            <h3>결과</h3>
+            <div class="chip">S = QK^T</div>
+            <pre id="s-out"></pre>
+            <div class="chip">A = softmax(S/√d<sub>k</sub>) (행별)</div>
+            <pre id="a-out"></pre>
+            <div class="chip">출력 = A · V</div>
+            <pre id="y-out"></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="tips">
+        <h2>9) 팁 & 디버깅 체크리스트</h2>
+        <ul>
+          <li><b>스케일</b>을 빼먹지 않았는가? (<span class="kbd">/√d<sub>k</sub></span>)</li>
+          <li><b>마스크</b> 브로드캐스트 축이 맞는가? (패딩/캐주얼)</li>
+          <li><b>정규화 축</b>이 마지막 차원(<span class="kbd">-1</span>)인가?</li>
+          <li>헤드 concat 후 <b>출력 투영</b>(<span class="kbd">W<sub>O</sub></span>)을 적용했는가?</li>
+          <li>긴 시퀀스는 <b>T² 메모리</b>에 유의 — <span class="kbd">fp16/bf16</span>, 체크포인팅, FlashAttention 고려.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      © 2025 Self-Attention Quick Guide · 필요하면 이 파일을 그대로 <span class="kbd">index.html</span>로 저장해 GitHub Pages에 올리세요.
+    </footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const parseMat = (s) => s.trim().split(/\n+/).filter(Boolean).map(row => row.split(/[,\s]+/).filter(Boolean).map(Number));
+    const shape = (M) => [M.length, M[0]?.length || 0];
+    const matmul = (A, B) => {
+      const [m, k] = shape(A); const [k2, n] = shape(B);
+      if (!m || !n || k !== k2) throw new Error("행렬 곱 불가: shape 불일치");
+      const C = Array.from({length: m}, () => Array(n).fill(0));
+      for (let i=0;i<m;i++) for (let j=0;j<n;j++) {
+        let s=0; for (let t=0;t<k;t++) s += A[i][t]*B[t][j]; C[i][j]=s;
+      }
+      return C;
+    };
+    const transpose = (A) => A[0] ? A[0].map((_,j)=>A.map(r=>r[j])) : [];
+    const softmaxRows = (S) => S.map(row => {
+      const m = Math.max(...row);
+      const exps = row.map(x => Math.exp(x - m));
+      const sum = exps.reduce((a,b)=>a+b,0);
+      return exps.map(e => e / sum);
+    });
+    const fmt = (M) => M.map(r => r.map(x => isFinite(x)? (Math.round(x*1e6)/1e6).toString():"-inf").join("\t")).join("\n");
+
+    $('run').addEventListener('click', () => {
+      try {
+        const Q = parseMat($('q').value); const K = parseMat($('k').value); const V = parseMat($('v').value);
+        const dk = Number($('dk').value || '1');
+        if (!Q.length || !K.length || !V.length) throw new Error('Q/K/V를 입력하세요');
+        const S = matmul(Q, transpose(K));
+        const scaled = S.map(row => row.map(x => x / Math.sqrt(dk)));
+        const A = softmaxRows(scaled);
+        const Y = matmul(A, V);
+        $('s-out').textContent = fmt(S);
+        $('a-out').textContent = fmt(A);
+        $('y-out').textContent = fmt(Y);
+      } catch (e) {
+        $('s-out').textContent = e.message;
+        $('a-out').textContent = '';
+        $('y-out').textContent = '';
+      }
+    });
+
+    $('fill-ex').addEventListener('click', () => {
+      $('q').value = '1,0\n0,1';
+      $('k').value = '1,0\n1,1';
+      $('v').value = '1,2\n3,4';
+      $('dk').value = 2;
+    });
+
+    $('clear').addEventListener('click', () => {
+      $('q').value = '';
+      $('k').value = '';
+      $('v').value = '';
+      $('s-out').textContent = '';
+      $('a-out').textContent = '';
+      $('y-out').textContent = '';
+    });
+
+    // theme toggle: flips light/dark by toggling a data attribute used by CSS vars (optional)
+    const toggleBtn = $('toggle-theme');
+    let forced = null; // null=system, 'light' | 'dark'
+    const applyTheme = () => {
+      if (forced === 'light') {
+        document.documentElement.style.colorScheme = 'light';
+        document.documentElement.classList.add('light');
+      } else if (forced === 'dark') {
+        document.documentElement.style.colorScheme = 'dark';
+        document.documentElement.classList.remove('light');
+      } else {
+        document.documentElement.style.colorScheme = 'normal';
+      }
+    };
+    toggleBtn.addEventListener('click', () => {
+      forced = forced === 'dark' ? 'light' : (forced === 'light' ? null : 'dark');
+      applyTheme();
+    });
+  </script>
+</body>
+</html>
