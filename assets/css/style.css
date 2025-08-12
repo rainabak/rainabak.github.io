@@ -33,10 +33,16 @@ a:hover{text-decoration:underline}
 .container{max-width:1100px;margin:0 auto;padding:24px 20px}
 
 /* NAV */
-.nav{position:sticky;top:0;z-index:10;display:flex;gap:18px;align-items:center;justify-content:flex-start;flex-wrap:wrap;
-     padding:12px 20px;background:rgba(10,14,22,.7);backdrop-filter:saturate(140%) blur(10px);border-bottom:1px solid var(--border)}
-html[data-theme="light"] .nav{background:rgba(241,245,249,.7)} /* 라이트일 때 투명 배경색 보정 */
-.nav .brand{font-weight:800;letter-spacing:.3px;margin-right:6px}
+.nav{background:#f0f0f0;padding:10px;margin-bottom:20px}
+.nav__link{margin-right:15px;text-decoration:none;color:#0073e6}
+.nav__link:hover{text-decoration:underline}
+.nav__link--current{
+  margin-right:15px;
+  color:#666;             /* 비활성처럼 보이게 */
+  pointer-events:none;    /* 클릭 안 되게 */
+  text-decoration:none;
+  font-weight:700;        /* 강조용(원하면 제거) */
+}
 
 /* 토글 버튼 */
 .toggle{
