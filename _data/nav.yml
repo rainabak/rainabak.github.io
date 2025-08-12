@@ -1,0 +1,12 @@
+- title: Home
+  url: /
+- title: Summary
+  url: /summary.html
+- title: Linear
+  url: /Linear.html
+- title: Norm
+  url: /Norm.html
+- title: Self Attention
+  url: /Sel-Attention.html
+- title: About
+  url: /about.html
