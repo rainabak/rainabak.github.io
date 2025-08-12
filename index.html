@@ -4,22 +4,77 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{{ page.title }}</title>
+  <style>
+    :root{
+      --bg:#0b0f17; --panel:#121826; --fg:#e5e7eb; --sub:#9aa4b2;
+      --link:#8ab4ff; --border:#1f2937; --radius:12px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR"}
+    .wrap{max-width:960px;margin:0 auto;padding:24px 20px}
+
+    /* NAV */
+    nav{
+      position:sticky;top:0;z-index:10;
+      display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+      background:rgba(18,24,38,.85);backdrop-filter:saturate(140%) blur(6px);
+      border-bottom:1px solid var(--border);padding:12px 20px;margin:0 -20px 24px;
+    }
+    nav a, nav .current{
+      text-decoration:none;padding:8px 10px;border-radius:8px;
+    }
+    nav a{color:var(--fg);border:1px solid transparent}
+    nav a:hover{border-color:var(--border);background:var(--panel)}
+    /* 현재 페이지 비활성 */
+    nav .current{
+      color:#7ea6ff;background:#172033;border:1px solid var(--border);
+      pointer-events:none;cursor:default;font-weight:700
+    }
+
+    /* CONTENT */
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+    a{color:var(--link)}
+  </style>
 </head>
 <body>
+  <div class="wrap">
 
-  <!-- 메뉴 영역 -->
-  <nav>
-    <a href="/about.html">About</a>
-    <a href="/summary.html">Summary</a>
-    <a href="/Linear.html">Linear</a>
-    <a href="/Norm.html">Norm</a>
-    <a href="/Sel-Attention.html">Self Attention</a>
-  </nav>
+    <!-- 메뉴 영역 (모든 페이지에 동일하게 붙여넣기) -->
+    <nav id="site-nav">
+      <a href="/">Home</a>
+      <a href="/summary.html">Summary</a>
+      <a href="/Linear.html">Linear</a>
+      <a href="/Norm.html">Norm</a>
+      <a href="/Sel-Attention.html">Self Attention</a>
+      <a href="/about.html">About</a>
+    </nav>
 
-  <!-- 메인 내용 -->
-  <h1>안녕하세요! 🎉</h1>
-  <p>여기는 <strong>index.html</strong> 입니다.</p>
-  <p>위 메뉴를 클릭하면 다른 페이지로 이동합니다.</p>
+    <!-- 메인 내용 -->
+    <div class="card">
+      <h1>안녕하세요! 🎉</h1>
+      <p>여기는 <strong>index.html</strong> 입니다.</p>
+      <p>위 메뉴를 클릭하면 다른 페이지로 이동합니다.</p>
+    </div>
 
+  </div>
+
+  <!-- 현재 페이지 메뉴 자동 비활성화 스크립트 -->
+  <script>
+    (function(){
+      const path = location.pathname.replace(/index\.html$/,'') || '/';
+      const links = document.querySelectorAll('#site-nav a');
+      for (const a of links) {
+        const apath = new URL(a.getAttribute('href'), location.origin).pathname;
+        // index.html 과 / 를 같은 페이지로 취급
+        const normA = apath.replace(/index\.html$/,'') || '/';
+        if (normA === path) {
+          const span = document.createElement('span');
+          span.className = 'current';
+          span.textContent = a.textContent;
+          a.replaceWith(span);
+        }
+      }
+    })();
+  </script>
 </body>
 </html>
