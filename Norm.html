@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Layer Normalization (Norm) 정리</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0b1020;--card:#12172a;--muted:#8ea0c0;--text:#e8eefc;--accent:#5ab0ff;--border:#1b2440}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Apple SD Gothic Neo,Arial,sans-serif;line-height:1.65}
+    .container{max-width:980px;margin:0 auto;padding:40px 20px}
+    header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:24px}
+    .badge{font-size:12px;color:#c9d7ff;background:#1a2140;border:1px solid var(--border);padding:4px 8px;border-radius:999px}
+    h1{font-size:34px;letter-spacing:-0.02em;margin:0}
+    h2{font-size:22px;margin:28px 0 12px}
+    h3{font-size:18px;margin:18px 0 8px;color:#cfe2ff}
+    p,li{color:#dbe6ff}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin:16px 0;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+    pre{background:#0c1328;border:1px solid var(--border);border-radius:12px;padding:16px;overflow:auto}
+    pre code{color:#e6f0ff}
+    .grid{display:grid;gap:16px}
+    @media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+    .kicker{color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:12px}
+    .pill{display:inline-block;padding:4px 8px;border:1px solid var(--border);border-radius:999px;background:#0e1731;color:#cfe2ff;font-size:12px}
+    .table{width:100%;border-collapse:separate;border-spacing:0}
+    .table th,.table td{padding:10px 12px;border-bottom:1px solid var(--border)}
+    .table th{color:#bcd3ff;text-align:left;font-weight:700}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+  </style>
+  <script>
+    window.MathJax = {tex: {inlineMath: [['$','$'],['\\(','\\)']]}};
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge">Normalization</span>
+      <h1>Layer Normalization (Norm) 정리</h1>
+    </header>
+
+    <section class="card">
+      <div class="kicker">개요</div>
+      <p><strong>Layer Normalization</strong>은 각 샘플(시퀀스의 한 토큰 벡터 등) 단위로 <em>특징 축(feature dimension)</em>에 대해 평균과 분산을 계산하여 정규화하는 방법입니다. 배치 크기에 의존하지 않아 RNN/Transformer처럼 시퀀스 길이와 배치가 변동되는 환경에서 안정적이며, <span class="pill">$
+      y = \gamma \odot \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta$
+      </span> 형태로 학습 가능한 스케일(\(\gamma\))과 시프트(\(\beta\))를 포함합니다.</p>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>1) 왜 필요한가?</h2>
+        <ul>
+          <li>각 레이어의 출력 분포 변동(Internal Covariate Shift)을 완화해 학습 안정화</li>
+          <li>더 큰 학습률 사용 가능, 수렴 가속</li>
+          <li>배치 크기에 무관 → 작은 배치/온라인 학습에도 일관된 동작</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>2) 계산 축 (axes)</h2>
+        <p>입력이 <span class="mono">(batch, seq_len, d_model)</span>이라면, <strong>각 토큰 벡터</strong>에 대해 <span class="mono">d_model</span> 축으로 평균/분산을 계산합니다.</p>
+        <pre><code>for b in range(B):
+  for t in range(T):
+    mu   = mean(x[b,t,:])
+    var  = var(x[b,t,:])
+    y[b,t,:] = (x[b,t,:] - mu) / sqrt(var + eps) * gamma + beta
+</code></pre>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>3) 수식</h2>
+      <p>특징 차원 수를 \(H\)라 할 때, 한 샘플의 입력 \(x \in \mathbb{R}^H\)에 대해:</p>
+      <p>$$\mu = \frac{1}{H} \sum_{i=1}^H x_i, \qquad \sigma^2 = \frac{1}{H} \sum_{i=1}^H (x_i - \mu)^2$$</p>
+      <p>$$\text{LN}(x)_i = \gamma_i \cdot \frac{x_i - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta_i$$</p>
+      <p class="kicker">파라미터: \(\gamma, \beta \in \mathbb{R}^H\), \(\epsilon\)은 수치 안정성 상수(예: 1e-5 ~ 1e-12).</p>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>4) Transformer에서의 위치</h2>
+        <p>두 가지 배치가 흔합니다.</p>
+        <h3>Post-LN (원 논문)</h3>
+        <pre><code>y = x + Sublayer(x)
+y = LayerNorm(y)</code></pre>
+        <p>초기 Transformer(2017)는 서브레이어(어텐션/FFN) 뒤에 LN을 적용.</p>
+        <h3>Pre-LN (현대 LLM 다수)</h3>
+        <pre><code>y = x + Sublayer(LayerNorm(x))</code></pre>
+        <p>깊은 네트워크에서 그래디언트 흐름이 더 원활해 학습 안정적이라는 보고가 많습니다.</p>
+      </div>
+      <div class="card">
+        <h2>5) 하이퍼파라미터 & 구현 팁</h2>
+        <ul>
+          <li><strong>epsilon</strong>: 너무 작으면 수치 불안정, 너무 크면 정규화 효과 약화</li>
+          <li><strong>affine</strong>: \(\gamma,\beta\) 학습 여부(대부분 <span class="mono">True</span>)</li>
+          <li><strong>normalized_shape</strong>: 보통 <span class="mono">d_model</span> 또는 마지막 축들의 튜플</li>
+          <li><strong>mixed precision</strong>: fp16에서 분산 계산 시 언더플로 주의 → 내부적으로 fp32로 승격하는 구현 사용 권장</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>6) 다른 정규화와의 비교</h2>
+      <table class="table">
+        <thead>
+          <tr><th>기법</th><th>평균/분산 계산 축</th><th>배치 의존성</th><th>주사용 도메인</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>BatchNorm</td><td>배치+공간</td><td>의존함</td><td>CNN(비전)</td></tr>
+          <tr><td>LayerNorm</td><td>특징(feature) 축</td><td>의존 없음</td><td>NLP/시퀀스</td></tr>
+          <tr><td>InstanceNorm</td><td>공간(채널별)</td><td>의존 없음</td><td>스타일 변환 등</td></tr>
+          <tr><td>GroupNorm</td><td>채널 그룹</td><td>의존 없음</td><td>소배치 비전</td></tr>
+          <tr><td>RMSNorm</td><td>분산 대신 RMS</td><td>의존 없음</td><td>LLM 변형(가벼움)</td></tr>
+        </tbody>
+      </table>
+      <p class="kicker">RMSNorm은 평균을 빼지 않고 L2 RMS로 스케일만 조정하는 변형으로, 계산이 단순하고 성능이 유사한 경우가 보고됩니다.</p>
+    </section>
+
+    <section class="card">
+      <h2>7) PyTorch 사용 예시</h2>
+      <pre><code class="language-python">import torch
+import torch.nn as nn
+
+B, T, D = 8, 128, 512  # batch, seq_len, d_model
+x = torch.randn(B, T, D)
+
+# 기본 LayerNorm: 마지막 차원 D를 정규화
+ln = nn.LayerNorm(normalized_shape=D, eps=1e-5, elementwise_affine=True)
+y = ln(x)  # shape: (B, T, D)
+
+# Pre-LN Transformer 블록 예시 (개략)
+class PreLNBlock(nn.Module):
+    def __init__(self, d_model, nhead):
+        super().__init__()
+        self.ln1 = nn.LayerNorm(d_model)
+        self.attn = nn.MultiheadAttention(d_model, nhead, batch_first=True)
+        self.ln2 = nn.LayerNorm(d_model)
+        self.ffn = nn.Sequential(
+            nn.Linear(d_model, 4*d_model),
+            nn.GELU(),
+            nn.Linear(4*d_model, d_model),
+        )
+    def forward(self, x, attn_mask=None):
+        a, _ = self.attn(self.ln1(x), self.ln1(x), self.ln1(x), attn_mask=attn_mask)
+        x = x + a
+        x = x + self.ffn(self.ln2(x))
+        return x
+</code></pre>
+      <p class="kicker">주의: <span class="mono">nn.MultiheadAttention</span>은 기본이 (L, N, E)이었지만 <span class="mono">batch_first=True</span>로 (N, L, E) 사용 가능.</p>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>8) 자주 하는 실수</h2>
+        <ul>
+          <li>입력 <span class="mono">shape</span>와 <span class="mono">normalized_shape</span> 불일치</li>
+          <li>epsilon을 너무 작게 설정하여 NaN 발생</li>
+          <li>Pre/Post-LN 혼용으로 학습 불안정</li>
+          <li>정규화 축을 잘못 선택(특히 2D/3D 텐서에서)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>9) 체크리스트</h2>
+        <ul>
+          <li>배치 크기/시퀀스 길이 변화에도 통일된 동작 확인</li>
+          <li>혼합정밀 시 분산 계산의 수치 안정성 점검</li>
+          <li>잔차 연결과 LN의 위치(Pre/Post) 결정 및 일관성 유지</li>
+          <li>Affine 파라미터(\(\gamma,\beta\)) 활성화 여부 검토</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>10) 참고</h2>
+      <ul>
+        <li>Ba et al., <em>Layer Normalization</em>, 2016</li>
+        <li>Vaswani et al., <em>Attention Is All You Need</em>, 2017</li>
+        <li>PyTorch Docs – <a href="https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html" target="_blank" rel="noreferrer">nn.LayerNorm</a></li>
+      </ul>
+      <p class="muted">이 페이지는 교육용 요약입니다. 수식은 MathJax로 렌더링됩니다.</p>
+    </section>
+  </div>
+</body>
+</html>
