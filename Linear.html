@@ -1,59 +1,8 @@
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Transformer에서의 Linear 정리</title>
-  <style>
-    :root{
-      --bg:#0b0f17; --panel:#121826; --fg:#e5e7eb; --sub:#9aa4b2;
-      --link:#8ab4ff; --border:#1f2937; --radius:12px;
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;background:var(--bg);color:var(--fg);
-      font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR"}
-
-    /* NAV */
-    nav{
-      position:sticky;top:0;z-index:10;
-      display:flex;flex-wrap:wrap;gap:14px;align-items:center;
-      background:rgba(18,24,38,.85);backdrop-filter:saturate(140%) blur(6px);
-      border-bottom:1px solid var(--border);padding:12px 20px;
-    }
-    nav a, nav .current{
-      text-decoration:none;padding:8px 10px;border-radius:8px;
-    }
-    nav a{color:var(--fg);border:1px solid transparent}
-    nav a:hover{border-color:var(--border);background:var(--panel)}
-    nav .current{
-      color:#7ea6ff;background:#172033;border:1px solid var(--border);
-      pointer-events:none;cursor:default;font-weight:700
-    }
-
-    /* CONTENT */
-    .content{padding:20px}
-    .card{background:var(--panel);border:1px solid var(--border);
-      border-radius:var(--radius);padding:20px;margin-bottom:20px}
-    a{color:var(--link)}
-    pre, code{
-      background:#0d1424;color:#dbe2ff;
-      border-radius:8px;padding:4px 8px;
-      font-family:Consolas, Monaco, monospace;
-    }
-    pre{padding:14px;overflow-x:auto}
-  </style>
-</head>
-<body>
-
-  <!-- 메뉴 영역 -->
-  <nav id="site-nav">
-    <a href="/">Home</a>
-    <a href="/about.html">About</a>
-    <a href="/summary.html">Summary</a>
-    <a href="/Linear.html">Linear</a>
-    <a href="/Norm.html">Norm</a>
-    <a href="/Sel-Attention.html">Self Attention</a>
-  </nav>
+---
+title: Linear
+layout: default
+permalink: /Linear.html
+---
 
   <!-- 메인 내용 -->
   <div class="content">
@@ -147,5 +96,3 @@ ffn = nn.Sequential(
       });
     })();
   </script>
-</body>
-</html>
