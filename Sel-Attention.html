@@ -1,77 +1,9 @@
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Self-Attention 정리</title>
-  <style>
-    :root {
-      --bg: #0b0e14;
-      --panel: #111622;
-      --text: #e6e6e6;
-      --muted: #9aa4b2;
-      --accent: #5cc8ff;
-      --accent-2: #a78bfa;
-      --ok: #34d399;
-      --warn: #f59e0b;
-      --danger: #ef4444;
-      --border: #1f2937;
-      --code-bg: #0f1420;
-    }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --bg: #f7fafc;
-        --panel: #ffffff;
-        --text: #0f172a;
-        --muted: #475569;
-        --accent: #0ea5e9;
-        --accent-2: #7c3aed;
-        --border: #e2e8f0;
-        --code-bg: #f8fafc;
-      }
-    }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: var(--bg); color: var(--text); line-height: 1.6; }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .container { display: grid; grid-template-columns: 260px 1fr; gap: 20px; padding: 24px; max-width: 1200px; margin: 0 auto; }
-    nav { position: sticky; top: 16px; align-self: start; background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
-    nav h2 { margin: 0 0 12px; font-size: 14px; color: var(--muted); letter-spacing: .02em; }
-    nav a { display: block; padding: 8px 10px; border-radius: 10px; color: var(--text); }
-    nav a:hover { background: rgba(92,200,255,.1); }
-    header.hero { grid-column: 1 / -1; background: linear-gradient(135deg, rgba(92,200,255,.12), rgba(167,139,250,.12)); border: 1px solid var(--border); border-radius: 20px; padding: 28px; }
-    .title { display:flex; align-items: center; justify-content: space-between; gap: 12px; }
-    h1 { margin: 0; font-size: 28px; }
-    .subtitle { color: var(--muted); font-size: 14px; margin-top: 6px; }
-    .content { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 24px; }
-    section + section { margin-top: 32px; }
-    h2 { font-size: 20px; margin: 0 0 8px; }
-    h3 { font-size: 16px; margin: 16px 0 8px; }
-    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 13px; background: var(--code-bg); color: var(--text); padding: 2px 6px; border-radius: 6px; border: 1px solid var(--border); }
-    pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 13px; }
-    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 14px; padding: 14px; overflow: auto; }
-    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
-    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; border: 1px solid var(--border); color: var(--muted); }
-    .callout { border-left: 3px solid var(--accent); background: linear-gradient(90deg, rgba(92,200,255,.12), transparent); padding: 12px 12px 12px 14px; border-radius: 12px; }
-    .muted { color: var(--muted); }
-    .row { display:flex; gap:12px; align-items:center; flex-wrap: wrap; }
-    .btn { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--border); background: var(--panel); padding: 8px 12px; border-radius: 999px; cursor:pointer; color: var(--text); }
-    .btn:hover { border-color: var(--accent); }
-    .table { width:100%; border-collapse: collapse; }
-    .table th, .table td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }
-    .table th { background: rgba(167,139,250,.12); }
-    .mono { font-variant-ligatures: none; }
-    footer { grid-column: 1 / -1; color: var(--muted); padding: 24px; text-align: center; }
-    .chip { display:inline-block; padding: 3px 8px; border:1px dashed var(--border); border-radius: 999px; font-size: 12px; color: var(--muted); }
-    .kbd-k { background: var(--bg); border:1px solid var(--border); }
-    .note { font-size: 13px; color: var(--muted); }
-    .flex { display:flex; gap:16px; flex-wrap: wrap; }
-    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
-  </style>
-</head>
-<body>
+---
+title: Self Attention
+layout: default
+permalink: /Sel-Attention.html
+---
+
   <div class="container">
     <header class="hero">
       <div class="title">
@@ -337,5 +269,4 @@ Y = concat_heads(Y) @ W_O                    # (B, T, d_model)
       applyTheme();
     });
   </script>
-</body>
-</html>
+
