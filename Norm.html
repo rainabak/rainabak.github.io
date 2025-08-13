@@ -1,109 +1,13 @@
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Layer Normalization (Norm) 정리</title>
+---
+title: Layer Normalization (Norm) 정리
+layout: default
+permalink: /Norm.html
+---
 
-  <!-- 폰트 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-
-  <style>
-    :root{
-      --bg:#0b1020; --card:#12172a; --muted:#8ea0c0; --text:#e8eefc;
-      --accent:#5ab0ff; --border:#1b2440; --row:#0d1428; --head:#0c1326;
-      --radius:16px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;background:var(--bg);color:var(--text);
-      font-family:Inter,system-ui,-apple-system,Segoe UI,Apple SD Gothic Neo,Arial,sans-serif;
-      line-height:1.65
-    }
-
-    /* NAV (상단 고정 + 현재 페이지 비활성) */
-    nav{
-      position:sticky;top:0;z-index:10;
-      display:flex;flex-wrap:wrap;gap:14px;align-items:center;
-      background:rgba(11,16,32,.85);backdrop-filter:saturate(140%) blur(8px);
-      border-bottom:1px solid var(--border);padding:12px 20px
-    }
-    nav a, nav .current{
-      text-decoration:none;padding:8px 12px;border-radius:10px
-    }
-    nav a{color:var(--text);border:1px solid transparent}
-    nav a:hover{border-color:var(--border);background:#0f1832}
-    nav .current{
-      color:#9ec7ff;background:#162244;border:1px solid var(--border);
-      pointer-events:none;cursor:default;font-weight:700
-    }
-
-    /* 레이아웃: 풀폭 */
-    .container{padding:40px 20px}
-    .badge{font-size:12px;color:#c9d7ff;background:#1a2140;border:1px solid var(--border);
-      padding:4px 8px;border-radius:999px}
-    header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:24px}
-    h1{font-size:34px;letter-spacing:-0.02em;margin:0}
-    h2{font-size:22px;margin:28px 0 12px}
-    h3{font-size:18px;margin:18px 0 8px;color:#cfe2ff}
-    p,li{color:#dbe6ff}
-
-    .card{
-      background:var(--card);border:1px solid var(--border);
-      border-radius:var(--radius);padding:20px;margin:16px 0;
-      box-shadow:0 10px 30px rgba(0,0,0,.25)
-    }
-    .grid{display:grid;gap:16px}
-    @media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
-
-    .kicker{color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;font-size:12px}
-    .pill{display:inline-block;padding:4px 8px;border:1px solid var(--border);
-      border-radius:999px;background:#0e1731;color:#cfe2ff;font-size:12px}
-
-    code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
-    pre{background:#0c1328;border:1px solid var(--border);border-radius:12px;padding:16px;overflow:auto}
-    pre code{color:#e6f0ff}
-
-    /* 표 */
-    .table-wrap{overflow-x:auto}
-    table.table{
-      width:100%;border-collapse:separate;border-spacing:0;
-      border:1px solid var(--border);border-radius:12px;overflow:hidden
-    }
-    .table th,.table td{padding:10px 12px;border-bottom:1px solid var(--border)}
-    .table th{background:var(--head);color:#bcd3ff;text-align:left;font-weight:700}
-    .table tbody tr:nth-child(odd){background:var(--row)}
-    .table tbody tr:hover{background:#142143}
-
-    a{color:var(--accent);text-decoration:none}
-    a:hover{text-decoration:underline}
-    .muted{color:var(--muted)}
-  </style>
-
-  <!-- MathJax -->
-  <script>window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]}};</script>
-  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-</head>
-<body>
-
-  <!-- 공통 네비 -->
-  <nav id="site-nav">
-    <a href="/">Home</a>
-    <a href="/summary.html">Summary</a>
-    <a href="/Linear.html">Linear</a>
-    <a href="/Norm.html">Norm</a>
-    <a href="/Sel-Attention.html">Self Attention</a>
-    <a href="/about.html">About</a>
-  </nav>
-
-  <div class="container">
-    <header>
-      <span class="badge">Normalization</span>
-      <h1>Layer Normalization (Norm) 정리</h1>
-    </header>
+<header>
+  <span class="badge">Normalization</span>
+  <h1>Layer Normalization (Norm) 정리</h1>
+</header>
 
     <section class="card">
       <div class="kicker">개요</div>
@@ -246,23 +150,4 @@ class PreLNBlock(nn.Module):
       </ul>
       <p class="muted">이 페이지는 교육용 요약입니다. 수식은 MathJax로 렌더링됩니다.</p>
     </section>
-  </div>
-
-  <!-- 현재 페이지 메뉴 자동 비활성화 -->
-  <script>
-    (function(){
-      const path = location.pathname.replace(/index\.html$/,'') || '/';
-      document.querySelectorAll('#site-nav a').forEach(a=>{
-        const apath = new URL(a.getAttribute('href'), location.origin).pathname;
-        const normA = apath.replace(/index\.html$/,'') || '/';
-        if (normA === path) {
-          const span = document.createElement('span');
-          span.className = 'current';
-          span.textContent = a.textContent;
-          a.replaceWith(span);
-        }
-      });
-    })();
-  </script>
-</body>
-</html>
+ 
