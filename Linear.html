@@ -4,49 +4,49 @@ layout: default
 permalink: /Linear.html
 ---
 
-  <!-- 메인 내용 -->
-  <div class="content">
-    <div class="card">
-      <h1>Transformer에서의 Linear 이해</h1>
+<div class="card">
+  <h1>Transformer에서의 Linear 이해</h1>
 
-      <section>
-        <h2>1. Linear의 의미</h2>
-        <p>"Attention Is All You Need" 논문에서 <strong>Linear</strong>는 수학적으로는 <em>선형변환</em>을, 구현에서는 <strong>Fully Connected Layer (Dense Layer)</strong>를 의미합니다. 입력 벡터에 학습 가능한 가중치 행렬과 편향을 곱해 다른 표현 공간으로 변환합니다.</p>
-      </section>
+  <section>
+    <h2>1. Linear의 의미</h2>
+    <p>"Attention Is All You Need" 논문에서 <strong>Linear</strong>는 수학적으로는 <em>선형변환</em>을, 구현에서는 <strong>Fully Connected Layer (Dense Layer)</strong>를 의미합니다. 입력 벡터에 학습 가능한 가중치 행렬과 편향을 곱해 다른 표현 공간으로 변환합니다.</p>
+  </section>
 
-      <section>
-        <h2>2. 사용 위치</h2>
-        <ul>
-          <li><strong>Q, K, V 생성</strong>: 입력 X를 각각 W_Q, W_K, W_V로 투영하여 Query, Key, Value를 생성</li>
-          <li><strong>Multi-Head Attention 출력 투영</strong>: 여러 헤드의 결과를 concat 후 W_O로 다시 투영</li>
-          <li><strong>Feed-Forward Network(FFN)</strong>: 두 개의 Linear와 비선형 활성화를 조합해 차원 확장/축소</li>
-        </ul>
-      </section>
+  <section>
+    <h2>2. 사용 위치</h2>
+    <ul>
+      <li><strong>Q, K, V 생성</strong>: 입력 X를 각각 W_Q, W_K, W_V로 투영하여 Query, Key, Value를 생성</li>
+      <li><strong>Multi-Head Attention 출력 투영</strong>: 여러 헤드의 결과를 concat 후 W_O로 다시 투영</li>
+      <li><strong>Feed-Forward Network(FFN)</strong>: 두 개의 Linear와 비선형 활성화를 조합해 차원 확장/축소</li>
+    </ul>
+  </section>
 
-      <section>
-        <h2>3. 수식</h2>
-        <pre><code>Q = X W_Q
+  <section>
+    <h2>3. 수식</h2>
+<pre><code>Q = X W_Q
 K = X W_K
 V = X W_V
-Attention(Q,K,V) = softmax(QK^T / sqrt(d_k)) V</code></pre>
-        <p>FFN 예시:</p>
-        <pre><code>FFN(x) = Linear2(ReLU(Linear1(x)))
+Attention(Q,K,V) = softmax(QK^T / sqrt(d_k)) V
+</code></pre>
+    <p>FFN 예시:</p>
+<pre><code>FFN(x) = Linear2(ReLU(Linear1(x)))
 # Linear1: d_model -> d_ff
-# Linear2: d_ff -> d_model</code></pre>
-      </section>
+# Linear2: d_ff -> d_model
+</code></pre>
+  </section>
 
-      <section>
-        <h2>4. 직관적 이해</h2>
-        <ul>
-          <li>좌표 변환: 입력 벡터를 어텐션에 유리한 표현 공간으로 이동</li>
-          <li>특징 혼합: 각 차원의 정보를 가중합으로 재조합</li>
-          <li>학습 가능한 투영: 유사도 계산과 합성에 적합한 공간 학습</li>
-        </ul>
-      </section>
+  <section>
+    <h2>4. 직관적 이해</h2>
+    <ul>
+      <li>좌표 변환: 입력 벡터를 어텐션에 유리한 표현 공간으로 이동</li>
+      <li>특징 혼합: 각 차원의 정보를 가중합으로 재조합</li>
+      <li>학습 가능한 투영: 유사도 계산과 합성에 적합한 공간 학습</li>
+    </ul>
+  </section>
 
-      <section>
-        <h2>5. PyTorch 예시</h2>
-        <pre><code>import torch.nn as nn
+  <section>
+    <h2>5. PyTorch 예시</h2>
+<pre><code>import torch.nn as nn
 
 # Q/K/V 투영
 W_Q = nn.Linear(d_model, d_model)
@@ -58,41 +58,24 @@ ffn = nn.Sequential(
     nn.Linear(d_model, d_ff),
     nn.ReLU(),
     nn.Linear(d_ff, d_model)
-)</code></pre>
-      </section>
+)
+</code></pre>
+  </section>
 
-      <section>
-        <h2>6. 주의사항</h2>
-        <ul>
-          <li>Linear 자체는 비선형성이 없으므로 Softmax, ReLU, Residual, LayerNorm과 함께 사용</li>
-          <li>Multi-Head Attention에서 각 헤드는 별도의 Linear 파라미터 사용</li>
-          <li>FFN에서는 차원 확장과 축소를 통해 표현력을 증가</li>
-        </ul>
-      </section>
+  <section>
+    <h2>6. 주의사항</h2>
+    <ul>
+      <li>Linear 자체는 비선형성이 없으므로 Softmax, ReLU/GELU, Residual, LayerNorm과 함께 사용</li>
+      <li>Multi-Head Attention에서 각 헤드는 별도의 Linear 파라미터 사용</li>
+      <li>FFN에서는 차원 확장과 축소를 통해 표현력을 증가</li>
+    </ul>
+  </section>
 
-      <section>
-        <h2>7. 참고</h2>
-        <ul>
-          <li>Vaswani et al., Attention Is All You Need, 2017 (<a href="https://arxiv.org/abs/1706.03762" target="_blank">arXiv</a>)</li>
-          <li>PyTorch 문서: <a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html" target="_blank">nn.Linear</a></li>
-        </ul>
-      </section>
-    </div>
-  </div>
-
-  <!-- 현재 페이지 메뉴 자동 비활성화 -->
-  <script>
-    (function(){
-      const path = location.pathname.replace(/index\.html$/,'') || '/';
-      document.querySelectorAll('#site-nav a').forEach(a=>{
-        const apath = new URL(a.getAttribute('href'), location.origin).pathname;
-        const normA = apath.replace(/index\.html$/,'') || '/';
-        if (normA === path) {
-          const span = document.createElement('span');
-          span.className = 'current';
-          span.textContent = a.textContent;
-          a.replaceWith(span);
-        }
-      });
-    })();
-  </script>
+  <section>
+    <h2>7. 참고</h2>
+    <ul>
+      <li>Vaswani et al., Attention Is All You Need, 2017 (<a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noreferrer">arXiv</a>)</li>
+      <li>PyTorch 문서: <a href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html" target="_blank" rel="noreferrer">nn.Linear</a></li>
+    </ul>
+  </section>
+</div>
