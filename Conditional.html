@@ -1,0 +1,60 @@
+---
+title: Conditional Probability
+layout: default
+permalink: /Conditional.html
+---
+
+<header>
+  <span class="badge">Probability</span>
+  <h1>Conditional Probability (조건부 확률)</h1>
+</header>
+
+<section class="card">
+  <div class="kicker">정의</div>
+  <p class="pill">$P(A \mid B) = \dfrac{P(A \cap B)}{P(B)} \quad (P(B)>0)$</p>
+  <ul>
+    <li>$P(A\cap B)$: 동시에 발생</li>
+    <li>$P(B)$: 조건 사건</li>
+  </ul>
+</section>
+
+<section class="grid">
+  <div class="card">
+    <h2>1) 곱셈정리</h2>
+    <p class="pill">$P(A\cap B)=P(A\mid B)P(B)=P(B\mid A)P(A)$</p>
+  </div>
+  <div class="card">
+    <h2>2) 전확률법칙</h2>
+    <p class="pill">$P(A)=\sum_i P(A\mid B_i)P(B_i)$</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2>3) 베이즈 정리</h2>
+  <p class="pill">$P(A \mid B) = \dfrac{P(B \mid A)P(A)}{P(B)}$</p>
+  <p>$P(B)=\sum_i P(B \mid A_i)P(A_i)$</p>
+  <p><a href="/Conditional-solutions.html">연습문제 해설 보기 →</a></p>
+</section>
+
+<section class="grid">
+  <div class="card">
+    <h2>4) 독립/조건부 독립</h2>
+    <ul>
+      <li>독립: $P(A\cap B)=P(A)P(B)$ ⇔ $P(A|B)=P(A)$</li>
+      <li>조건부 독립: $P(A\cap B|C)=P(A|C)P(B|C)$</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>5) 연속형</h2>
+    <p class="pill">$f_{X|Y}(x|y)=\dfrac{f_{X,Y}(x,y)}{f_Y(y)}$</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2>6) 미니 연습문제</h2>
+  <ol>
+    <li>주사위: $A$=짝수, $B$=$\ge4$. $P(A|B)$?</li>
+    <li>이진 분류: 정답(+) 40%, $P(+|\hat{+})=0.8$, $P(-|\hat{-})=0.9$. $P(\hat{+})$?</li>
+    <li>상자 A/B 문제: $P(B|\text{파란})$?</li>
+  </ol>
+</section>
