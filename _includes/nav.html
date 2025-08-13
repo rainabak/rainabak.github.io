@@ -1,12 +1,8 @@
 <nav class="nav">
   {% assign current = page.url | replace: 'index.html','' %}
   {% for item in site.data.nav %}
-    {% comment %}
-      item.url은 /something.html 같은 절대경로.
-      page.url은 /path/file.html 또는 / (index일 때) 형태.
-    {% endcomment %}
     {% if current == item.url or page.url == item.url %}
-      <span class="nav__link nav__link--current" aria-current="page">{{ item.title }}</span>
+      <span class="nav__current" aria-current="page">{{ item.title }}</span>
     {% else %}
       <a class="nav__link" href="{{ item.url | relative_url }}">{{ item.title }}</a>
     {% endif %}
